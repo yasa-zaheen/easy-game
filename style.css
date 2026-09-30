@@ -33,7 +33,7 @@ h1 {
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: 0.05em;
-  color: #4ade80;
+  color: #f59e0b;
 }
 
 .stats {
@@ -109,7 +109,7 @@ h1 {
   font-size: 1rem;
   font-weight: 600;
   color: #0f0f13;
-  background: #4ade80;
+  background: #f59e0b;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -117,7 +117,7 @@ h1 {
 }
 
 .btn:hover {
-  background: #22c55e;
+  background: #d97706;
 }
 
 .btn:active {
