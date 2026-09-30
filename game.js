@@ -10,8 +10,9 @@ const restartBtn = document.getElementById('restart-btn');
 const GRID_SIZE = 20;
 const TILE_COUNT = canvas.width / GRID_SIZE;
 const INITIAL_SPEED = 120;
+const FOOD_COUNT = 3;
 
-let snake, direction, nextDirection, food, score, highScore, gameLoop, isRunning;
+let snake, direction, nextDirection, foods, score, highScore, gameLoop, isRunning;
 
 function init() {
   highScore = parseInt(localStorage.getItem('snakeHighScore') || '0', 10);
@@ -30,21 +31,36 @@ function resetGame() {
   nextDirection = { x: 1, y: 0 };
   score = 0;
   scoreEl.textContent = score;
-  food = spawnFood();
+  foods = spawnFoods(FOOD_COUNT);
   isRunning = false;
   clearInterval(gameLoop);
   draw();
 }
 
-function spawnFood() {
+function isOccupied(x, y, others = foods) {
+  return (
+    snake.some(segment => segment.x === x && segment.y === y) ||
+    (others && others.some(f => f.x === x && f.y === y))
+  );
+}
+
+function spawnFood(others = foods) {
   let position;
   do {
     position = {
       x: Math.floor(Math.random() * TILE_COUNT),
       y: Math.floor(Math.random() * TILE_COUNT),
     };
-  } while (snake.some(segment => segment.x === position.x && segment.y === position.y));
+  } while (isOccupied(position.x, position.y, others));
   return position;
+}
+
+function spawnFoods(count) {
+  const result = [];
+  for (let i = 0; i < count; i++) {
+    result.push(spawnFood(result));
+  }
+  return result;
 }
 
 function startGame() {
@@ -72,10 +88,12 @@ function tick() {
 
   snake.unshift(head);
 
-  if (head.x === food.x && head.y === food.y) {
+  const eatenIndex = foods.findIndex(f => f.x === head.x && f.y === head.y);
+  if (eatenIndex !== -1) {
     score++;
     scoreEl.textContent = score;
-    food = spawnFood();
+    foods.splice(eatenIndex, 1);
+    foods.push(spawnFood());
   } else {
     snake.pop();
   }
@@ -101,15 +119,17 @@ function draw() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = '#ef4444';
-  ctx.beginPath();
-  ctx.arc(
-    food.x * GRID_SIZE + GRID_SIZE / 2,
-    food.y * GRID_SIZE + GRID_SIZE / 2,
-    GRID_SIZE / 2 - 2,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
+  foods.forEach(food => {
+    ctx.beginPath();
+    ctx.arc(
+      food.x * GRID_SIZE + GRID_SIZE / 2,
+      food.y * GRID_SIZE + GRID_SIZE / 2,
+      GRID_SIZE / 2 - 2,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+  });
 
   snake.forEach((segment, i) => {
     const shade = Math.max(40, 180 - i * 8);
